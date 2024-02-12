@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product API Demo</title>
+</head>
+<body>
+<h1>Product API Demo</h1>
+
+<h2>Create Product</h2>
+<form id="createProductForm">
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name"><br><br>
+
+    <label for="description">Description:</label>
+    <input type="text" id="description" name="description"><br><br>
+
+    <label for="price">Price:</label>
+    <input type="number" id="price" name="price"><br><br>
+
+    <label for="quantity">Quantity Available:</label>
+    <input type="number" id="quantity" name="quantity"><br><br>
+
+    <button type="submit">Create Product</button>
+    <p id="createMessage"></p>
+</form>
+
+<h2>Read Product</h2>
+<form id="getProductForm">
+    <label for="productIdRead">Product ID:</label>
+    <input type="text" id="productIdRead" name="productId"><br><br>
+
+    <button type="submit">Get Product</button>
+    <p id="readMessage"></p>
+</form>
+
+<h2>Update Product</h2>
+<form id="updateProductForm">
+    <label for="productIdUpdate">Product ID:</label>
+    <input type="text" id="productIdUpdate" name="productId"><br><br>
+
+    <label for="nameUpdate">Name:</label>
+    <input type="text" id="nameUpdate" name="name"><br><br>
+
+    <label for="descriptionUpdate">Description:</label>
+    <input type="text" id="descriptionUpdate" name="description"><br><br>
+
+    <label for="priceUpdate">Price:</label>
+    <input type="number" id="priceUpdate" name="price"><br><br>
+
+    <label for="quantityUpdate">Quantity Available:</label>
+    <input type="number" id="quantityUpdate" name="quantity"><br><br>
+
+    <button type="submit">Update Product</button>
+    <p id="updateMessage"></p>
+</form>
+
+<h2>Delete Product</h2>
+<form id="deleteProductForm">
+    <label for="productIdDelete">Product ID:</label>
+    <input type="text" id="productIdDelete" name="productId"><br><br>
+
+    <button type="submit">Delete Product</button>
+    <p id="deleteMessage"></p>
+</form>
+
+<h2>Apply Discount or Tax</h2>
+<form id="applyDiscountTaxForm">
+    <label for="productIdDiscountTax">Product ID:</label>
+    <input type="text" id="productIdDiscountTax" name="productId"><br><br>
+
+    <label for="discountPercentage">Discount Percentage:</label>
+    <input type="number" id="discountPercentage" name="discountPercentage"><br><br>
+
+    <label for="taxRate">Tax Rate:</label>
+    <input type="number" id="taxRate" name="taxRate"><br><br>
+
+    <select id="discountOrTax" name="discountOrTax">
+        <option value="discount">Apply Discount</option>
+        <option value="tax">Apply Tax</option>
+    </select><br><br>
+
+    <button type="submit">Apply</button>
+    <p id="applyMessage"></p>
+</form>
+
+<script>
+    document.getElementById("createProductForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+        let formData = new FormData(this);
+        fetch("/products", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById("createMessage").innerText = JSON.stringify(data);
+        })
+        .catch(error => console.error("Error:", error));
+    });
+
+    document.getElementById("getProductForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+        let productId = document.getElementById("productIdRead").value;
+        fetch("/products/" + productId)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById("readMessage").innerText = JSON.stringify(data);
+        })
+        .catch(error => console.error("Error:", error));
+    });
+
+    document.getElementById("updateProductForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+        let formData = new FormData(this);
+        fetch("/products", {
+            method: "PUT",
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById("updateMessage").innerText = JSON.stringify(data);
+        })
+        .catch(error => console.error("Error:", error));
+    });
+
+    document.getElementById("deleteProductForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+        let productId = document.getElementById("productIdDelete").value;
+        fetch("/products/" + productId, {
+            method: "DELETE"
+        })
+        .then(response => {
+            if (response.ok) {
+                document.getElementById("deleteMessage").innerText = "Product deleted successfully.";
+            } else {
+                document.getElementById("deleteMessage").innerText = "Failed to delete product.";
+            }
+        })
+        .catch(error => console.error("Error:", error));
+    });
+
+    document.getElementById("applyDiscountTaxForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+        let formData = new FormData(this);
+        let discountOrTax = formData.get("discountOrTax");
+        let url = "/products/" + formData.get("productId") + "/";
+        if (discountOrTax === "discount") {
+            url += "apply-discount";
+        } else {
+            url += "apply-tax";
+        }
+        fetch(url + "?discountPercentage=" + formData.get("discountPercentage") + "&taxRate=" + formData.get("taxRate"), {
+            method: "PATCH"
+        })
+        .then(response => {
+            if (response.ok) {
+                document.getElementById("applyMessage").innerText = "Discount or tax applied successfully.";
+            } else {
+                document.getElementById("applyMessage").innerText = "Failed to apply discount or tax.";
+            }
+        })
+        .catch(error => console.error("Error:", error));
+    });
+</script>
+</body>
+</html>
